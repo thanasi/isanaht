@@ -1,0 +1,41 @@
+#!/usr/bin/env python
+from __future__ import division
+import os
+import argparse
+import numpy as np
+import cv2
+
+from isanaht.io import loadmov
+from isanaht.math import
+
+fourcc = cv2.cv.FOURCC(*'mp4v')
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Analyze the differences between sequential frames in a .mov file',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('infile', type=str, help='input file name')
+    parser.add_argument('outfile', type=str, help='output file name')
+
+    args = parser.parse_args()
+    infile = args.infile
+    outfile = args.outfile
+
+    assert os.path.exists(infile), "please choose a real input file"
+
+    if os.path.splitext(infile)[-1] == '.npy':
+        data = np.load(infile)
+
+    elif os.path.splitext(infile)[-1] == '.mov':
+        data = loadmov(infile)
+
+    else:
+        raise IOError("input file type unrecognized")
+
+
+    gdata = data[...,1]
+    diffdat = np.diff(gdata.astype(float), axis=0)
+
+
