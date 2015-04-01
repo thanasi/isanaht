@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
 
     assert os.path.exists(infile), "please choose a real input file"
-    fr = loadmov(infile)
+    fr = loadmov(infile, True)
 
     nf = fr.shape[0]
 

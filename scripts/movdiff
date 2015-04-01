@@ -44,7 +44,7 @@ if __name__ == "__main__":
         data = np.load(infile)[fr,...,channel].astype(np.float16)
 
     elif os.path.splitext(infile)[-1] == '.mov':
-        data = loadmov(infile)[fr,...,channel].astype(np.float16)
+        data = loadmov(infile, True)[fr,...,channel].astype(np.float16)
 
     else:
         raise IOError("input file type unrecognized")
@@ -67,7 +67,7 @@ if __name__ == "__main__":
         np.save(outfile, diffdat)
 
     elif os.path.splitext(outfile)[-1] == '.mov':
-        savemov(outfile, diffdat, fourcc)
+        savemov(outfile, diffdat, fourcc, True)
 
     else:
         raise IOError("output file type unrecognized")
