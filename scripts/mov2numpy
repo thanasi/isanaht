@@ -12,6 +12,8 @@ import numpy as np
 from isanaht.io import loadmov
 from isanaht.user_interaction import verify_im
 
+import mahotas as mh
+
 import argparse
 
 
@@ -25,7 +27,9 @@ if __name__ == "__main__":
     # parser.add_argument('--head', type=str, help='xml header file describing video properties')
     parser.add_argument('--cropx', type=int, nargs=2, help='x-crop bounds')
     parser.add_argument('--cropy', type=int, nargs=2, help='y-crop bounds')
-
+    parser.add_argument('--chan', type=int, help='convert only a specific channel')
+    parser.add_argument('--noverify', action='store_true', help='don\'t verify crop bounds')
+    parser.add_argument('--autocropx', action='store_true', help='automatically determine crop bounds in x-direction')
 
     args = parser.parse_args()
     infile = args.infile
@@ -33,8 +37,11 @@ if __name__ == "__main__":
     # header = args.head
     xbounds = args.cropx
     ybounds = args.cropy
+    chan = args.chan
+    verify = not args.noverify
+    autocropx = args.autocropx
 
-    crop = False
+    crop = autocropx
 
     if xbounds is not None:
         crop = True
@@ -47,23 +54,48 @@ if __name__ == "__main__":
     else:
         ybounds = [None, None]
 
+    if chan is None:
+        chan =slice(None, None)
 
-    _sl = [slice(None, None),
-           slice(*ybounds),
-           slice(*xbounds),
-           Ellipsis]
 
 
     assert os.path.exists(infile), "please choose a real input file"
     fr = loadmov(infile, True)
+    print fr.shape
+
+    # handle movies that were exported with an extra dimension
+    if fr.ndim == 5:
+        print 'cutting extra dimension'
+        fr = fr[:,:,:,0,:]
+
+    if autocropx:
+        x_profile = fr.max(0).max(0)
+        t = mh.otsu(x_profile)
+        w = np.where(x_profile>t)[0]
+        pad = 30
+        extra = (w[0] + w[-1])%2    # if the width is odd, add one to the right side to make it even
+
+        xbounds = [w[0]-pad, w[-1]+pad+extra]
+        print "Cropping x to: ", xbounds
+
+    _sl = [slice(None, None),
+           slice(*ybounds),
+           slice(*xbounds),
+           chan]
+
+
 
     nf = fr.shape[0]
-
+    sys.stdout.write("\n")
+    sys.stdout.flush()
     if crop:
-        if not verify_im(fr[_sl][nf//2], "Confirm Crop (y/n): ", "y"):
-            print "\nUser Cancelled\n"
-            sys.exit(1)
+        if verify:
+            if not verify_im(fr[_sl].max(0), "Confirm Crop (y/n): ", "y"):
+                print "\nUser Cancelled\n"
+                sys.exit(1)
+        else:
+            print "Skipping verification"
 
     np.save(outfile, fr[_sl])
 
-    print "Saved converted output:\t%s\t(%d frames)\n" % (outfile, fr.shape[0])
+    print "\nSaved converted output:\t%s\t(%d frames)\n" % (outfile, fr.shape[0])

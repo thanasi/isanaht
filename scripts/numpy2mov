@@ -1,0 +1,51 @@
+#!/usr/bin/env python
+from __future__ import division
+import os
+import argparse
+
+import numpy as np
+
+from isanaht.mthread import parallel_map
+from isanaht.io import write_output_ims, check_filepath
+from isanaht.gfx import overlay_withcolor
+from isanaht.math import maptouint8
+
+import palettable as pbl
+
+
+if __name__ == "__main__":
+
+    parser = argparse.ArgumentParser(description='Convert .npy image stack(s) to a movie file',
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('infile', type=str, help='input file name')
+    parser.add_argument('outfile', type=str, help='output file name')
+    parser.add_argument('--overlay', type=str, default='', help='mask data to overlay')
+
+    args = parser.parse_args()
+    infile = args.infile
+    outfile = args.outfile
+    maskfile = args.overlay
+
+
+    data = np.load(infile)
+
+    check_filepath(os.path.split(outfile)[0])
+
+    if maskfile is not '':
+
+        owc = lambda A: maptouint8(overlay_withcolor(A[0], A[1]))
+
+        mask = np.load(maskfile)
+        outdata = np.asarray(parallel_map(owc, zip(data, mask), (), 4, verbmin=True))
+
+    else:
+        outdata = data
+
+
+    write_output_ims(outfile, outdata)
+
+
+
+
+
