@@ -9,8 +9,6 @@ try:
     from matplotlib import animation, style
     from matplotlib import pyplot as plt
 
-    import palettable as pbl
-
     VIDEO_TAG = """<video controls>
      <source src="data:video/x-m4v;base64,{0}" type="video/mp4">
      Your browser does not support the video tag.
@@ -33,15 +31,6 @@ try:
     # actually run this when the package is imported
     style.use("ipython_style_inline")
 
-    side_legend_settings = {"fontsize": 16,
-                            "bbox_to_anchor": (1.02, 1),
-                            "loc": 2,
-                            "borderaxespad": 0.0,
-                            "numpoints": 1}
-
-    cmap3 = pbl.colorbrewer.get_map('Set1', 'Qualitative', 3)
-    cmap5 = pbl.colorbrewer.get_map('Set1', 'Qualitative', 5)
-    cmap7 = pbl.colorbrewer.get_map('Set1', 'Qualitative', 7)
-
 except NameError:
     raise ImportError("This package is meant to be imported into an IPython Notebook")
+
