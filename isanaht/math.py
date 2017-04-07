@@ -13,3 +13,7 @@ def constrain(x, xmin, xmax):
     x0 = min(x,xmax)
     x1 = max(x0,xmin)
     return x1
+
+def get_rotation_mat_2d(phi):
+    return np.array([[np.cos(phi), -np.sin(phi)],
+                     [np.sin(phi), np.cos(phi)]], dtype=np.float)
