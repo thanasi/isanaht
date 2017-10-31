@@ -17,7 +17,7 @@ if __name__ == "__main__":
     plt.ioff()
 
     data = pd.read_csv(file, index_col=0)
-
-    plt.plot(data, '.-')
     
+    data.plot(style='.-')
+
     plt.show()
