@@ -1,10 +1,11 @@
 try:
     # check that we've loaded ipython interactively
     __IPYTHON__
-    if not "zmq.zmqshell" in str(get_ipython()):
+    # if not "ipykernel.zmqshell" in str(get_ipython()):
+    if not "zmqshell.ZMQInteractiveShell" in str(get_ipython()):
         aaaaaaaa
 
-    from IPython.display import HTML
+    from ipywidgets import HTML
     from tempfile import NamedTemporaryFile
     from matplotlib import animation, style
     from matplotlib import pyplot as plt

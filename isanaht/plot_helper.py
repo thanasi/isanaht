@@ -93,3 +93,35 @@ def fix_image_axes(ax):
         ax.set_xlim(0, nx)
         ax.set_ylim(ny, 0)
 
+
+def make_interactive_legend_picker(ax):
+    """
+    based on the code from : http://matplotlib.org/examples/event_handling/legend_picking.html
+
+    """
+
+    # we will set up a dict mapping legend line to orig line, and enable
+    # picking on the legend line
+    leg = ax.get_legend()
+    lines = ax.get_lines()
+    lined = dict()
+    for legline, origline in zip(leg.get_lines(), lines):
+        legline.set_picker(5)  # 5 pts tolerance
+        lined[legline] = origline
+
+    def onpick(event):
+        # on the pick event, find the orig line corresponding to the
+        # legend proxy line, and toggle the visibility
+        legline = event.artist
+        origline = lined[legline]
+        vis = not origline.get_visible()
+        origline.set_visible(vis)
+        # Change the alpha on the line in the legend so we can see what lines
+        # have been toggled
+        if vis:
+            legline.set_alpha(1.0)
+        else:
+            legline.set_alpha(0.2)
+            ax.get_figure().canvas.draw()
+
+    ax.get_figure().canvas.mpl_connect('pick_event', onpick)
