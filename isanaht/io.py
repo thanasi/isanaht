@@ -28,7 +28,7 @@ def write_output_ims(outfile, data, timeinfo=None):
             savemov(outfile,data, verb=True, timeinfo=timeinfo)
 
         elif ext == '.npy':
-            print "saving %s" % outfile
+            print("saving %s" % outfile)
             np.save(outfile, data)
 
         elif ext == '.png':

@@ -91,9 +91,9 @@ def foreach(f,l,args,kwargs={},threads=3,return_=False,verb=False, verbmin=False
                             sys.stdout.write(m + '\b'*len(m))
                             sys.stdout.flush()
                         if verb:
-                            print msg('+ starting thread %d' \
+                            print(msg('+ starting thread %d' \
                                       % v[0],\
-                                      override_callername=f.__name__+'()')
+                                      override_callername=f.__name__+'()'))
                     finally:
                         iteratorlock.release()
 
@@ -108,10 +108,10 @@ def foreach(f,l,args,kwargs={},threads=3,return_=False,verb=False, verbmin=False
                     try:
                         iteratorlock.acquire()
                         if verb:
-                            print msg('- finished thread %d in %s' % \
+                            print(msg('- finished thread %d in %s' % \
                                       (v[0],\
                                        timefmt(t)),\
-                                      override_callername=f.__name__+'()')
+                                      override_callername=f.__name__+'()'))
                     finally:
                         iteratorlock.release()
                 except:
