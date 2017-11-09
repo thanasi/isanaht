@@ -58,18 +58,26 @@ if __name__ == "__main__":
         if usecols is not None:
             data = data.iloc[:,usecols]
         
-        data.set_index(keys=data.columns[0], drop=True, inplace=True)
             
     else:
         if usecols is not None:
-            data = pd.read_csv(file, index_col=0, usecols=usecols)
+            data = pd.read_csv(file,usecols=usecols)
         else:
-            data = pd.read_csv(file, index_col=0)
+            data = pd.read_csv(file)
         
+    
+    # get rid of any rows where the index is NaN
+    data.dropna(axis=0, how='all', subset=[data.columns[0]], inplace=True)
+    
+    # get rid of any rows that have no values among the data
+    data.dropna(axis=0, how='all', inplace=True)
+
+    # set the first column as the x (index) column
+    data.set_index(keys=data.columns[0], drop=True, inplace=True)
     
     if sort_data:
         data = data.sort_index()
-        
+       
     
     ###################
     # plotting block
