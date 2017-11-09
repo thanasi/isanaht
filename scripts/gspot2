@@ -1,0 +1,34 @@
+#!/bin/sh
+
+# calculate the spot size (microns) of a gaussian laser
+# argument #1: wavelength (nm)
+# argument #2: f of focusing optics
+# argument #3: beam diameter in same units as f
+# argument #4: Focusability (M^2)
+
+echo "scale=3; (4 * $1 * $2 * $4) / ($3 * 3.141592 * 1000)" | bc
+
+
+# Python Version Below
+
+#!/usr/bin/env python
+# import argparse
+# import numpy as np
+#
+# if __name__ == "__main__":
+#
+#     parser = argparse.ArgumentParser(description='Calculate the spot size of a gaussian laser',
+#                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+#
+#     parser.add_argument('lmbda', type=float, help='wavelength in nm')
+#     parser.add_argument('fN', type=float, help='f/# of focusing optics')
+#     parser.add_argument('M2', type=float, help='Focusability (M^2)')
+#
+#     args = parser.parse_args()
+#     l = args.lmbda
+#     fN = args.fN
+#     M2 = args.M2
+#
+#     spotsize = 4/np.pi * l * M2 * fN / 1000
+#
+#     print("{:3.1f} microns".format(spotsize))

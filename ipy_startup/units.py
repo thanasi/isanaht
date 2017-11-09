@@ -14,6 +14,7 @@ def units(line):
     Q = ureg.Quantity
 
     globals().update({'Q':Q, 'ureg':ureg, 'pi':pi})
+    print ("Unit Registry Activated")
 
 # In an interactive session, we need to delete these to avoid
 # name conflicts for automagic to work on line magics.
