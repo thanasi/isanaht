@@ -7,7 +7,7 @@ from IPython.core.magic import (register_line_magic, register_cell_magic,
 
 @register_line_magic
 def data(line):
-    "initialize an interactive session with unit support"
+    "initialize an interactive session with data support"
 
     import matplotlib.pyplot as plt
     import numpy as np
