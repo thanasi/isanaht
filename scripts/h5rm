@@ -1,0 +1,24 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import argparse
+import pandas as pd
+
+if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser(description="Remove object from an hdf5 file", 
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    
+    parser.add_argument("h5file", type=str, help="input/output hdf5 file")
+    parser.add_argument("name", type=str, help="object name to remove")
+
+    args = parser.parse_args()
+
+    infile = args.h5file
+    name = args.name
+
+    store = pd.HDFStore(infile)
+
+    del store[name]
+
+    store.close()
