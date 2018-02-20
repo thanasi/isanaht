@@ -14,6 +14,8 @@ if __name__ == "__main__":
 
     loggroup = parser.add_mutually_exclusive_group()
     errgroup = parser.add_mutually_exclusive_group()
+    linegroup = parser.add_mutually_exclusive_group()
+    
     parser.add_argument('file', type=str, help='data filename')
     parser.add_argument('--usecols', metavar='N', type=int, nargs='+', 
                         help='columns to load')
@@ -21,11 +23,18 @@ if __name__ == "__main__":
                         help='rows to skip')
     parser.add_argument('--sort', action='store_true', 
                         help='sort loaded data by index')
+    parser.add_argument('--grid', action='store_true', 
+                        help='show plot grid')
+    parser.add_argument('--axeq', action='store_true', 
+                        help='plot with equal axes')
+    
     parser.add_argument('--polyfit', metavar='M', type=int, 
                 help='fit each column of data using a polynomial of order M')
     
-    parser.add_argument('--lineplot', action='store_true',
-                        help='only plot lines, not markers')
+    linegroup.add_argument('--lineplot', action='store_true',
+                           help='only plot lines, not markers')
+#    linegroup.add_argument('--nolines', action='store_true',
+#                           help="don't plot lines, only markers")
 
     errgroup.add_argument('--droperr', action='store_true',
                         help='drop error columns during import')
@@ -42,7 +51,11 @@ if __name__ == "__main__":
     usecols = args.usecols
     skiprows = args.skiprows
     sort_data = args.sort
+    grid_on = args.grid
+    equal_axis = args.axeq
+    
     polyfit = args.polyfit
+    
     lineplot = args.lineplot
 
     errorbars = args.err
@@ -108,14 +121,45 @@ if __name__ == "__main__":
             
             if polyfit is not None:
                 m = ~np.isnan(d)
-                p = np.polyfit(x[m],d[m],polyfit,w=1/e[m])
-                print("{:s} polyfit: {}".format(l, p))
-                x_ = np.linspace(x[m].min(), x[m].max(), 1000)
-                y_ = np.poly1d(p)(x_)
-                li.set_ls('')
-                plt.plot(x_,y_,'--',c=li.get_c())
+                x_ = x[m]
+                d_ = d[m]
+                e_ = e[m]
+
+                w_ = 1/e
                 
-            
+                if logx or loglog:
+                    x_ = np.log10(x_)
+                if logy or loglog:
+                    w = None
+                    d_ = np.log10(d_)
+
+                if logx:
+                    print("  Y vs log(X) polyfit")
+                elif logy: 
+                    print("  log(Y) vs X polyfit")
+                elif loglog:
+                    print("  log(Y) vs log(X) polyfit")
+                else:
+                    print("  Y vs X polyfit")
+                
+#                p,v = np.polyfit(x_,d_,polyfit,w=w_, cov=True)
+#                p_std = np.sqrt(np.diag(v))
+#                print("{:s} polyfit: {} +/- {}".format(l, p, p_std))\
+                p = np.polyfit(x_,d_,polyfit,w=w_, cov=False)
+                print("{:s} polyfit: {}".format(l, p))
+                
+                xx = np.linspace(x_.min(), x_.max(), 1000)
+                yy = np.poly1d(p)(xx)
+                li.set_ls('')
+
+                if logx or loglog:
+                    xx = 10**xx
+                if logy or loglog:
+                    yy = 10**yy
+
+                plt.plot(xx,yy,'--',c=li.get_c())
+                
+        
         plt.xlabel(data.index.name)
         plt.legend()
         
@@ -131,20 +175,39 @@ if __name__ == "__main__":
             
             if polyfit is not None:
                 m = ~np.isnan(d)
-                p = np.polyfit(x[m],d[m],polyfit)
-                print("{} polyfit: {}".format(l, p))
-                x_ = np.linspace(x[m].min(), x[m].max(), 1000)
-                y_ = np.poly1d(p)(x_)
-                li.set_ls('')
-                plt.plot(x_,y_,'--',c=li.get_c())
+                x_ = x[m]
+                d_ = d[m]
                 
-#                title = "fitting $y ="
-#                for i in range(polyfit)[::-1]:
-#                    title += " + {} x^{}".format(string.ascii_lowercase[i], i)
-#                    
-#                title += "$"
-#                
-#                plt.title(title)
+                if logx or loglog:
+                    x_ = np.log10(x_)
+                if logy or loglog:
+                    d_ = np.log10(d_)
+
+                if logx:
+                    print("  Y vs log(X) polyfit")
+                elif logy: 
+                    print("  log(Y) vs X polyfit")
+                elif loglog:
+                    print("  log(Y) vs log(X) polyfit")
+                else:
+                    print("  Y vs X polyfit")
+                                   
+#                p,v = np.polyfit(x_,d_,polyfit,w=w_, cov=True)
+#                p_std = np.sqrt(np.diag(v))
+#                print("{:s} polyfit: {} +/- {}".format(l, p, p_std))\
+                p = np.polyfit(x_,d_,polyfit,w=w_, cov=False)
+                print("{:s} polyfit: {}".format(l, p))
+
+                xx = np.linspace(x_.min(), x_.max(), 1000)
+                yy = np.poly1d(p)(xx)
+                li.set_ls('')
+
+                if logx or loglog:
+                    xx = 10**xx
+                if logy or loglog:
+                    yy = 10**yy
+
+                plt.plot(xx,yy,'--',c=li.get_c())
             
             
         plt.xlabel(data.index.name)
@@ -157,4 +220,9 @@ if __name__ == "__main__":
     elif loglog:
         plt.loglog()
         
+    plt.grid(b=grid_on, color='#666666', which='both')
+        
+    if equal_axis:
+        plt.axis('equal')
+             
     plt.show()
