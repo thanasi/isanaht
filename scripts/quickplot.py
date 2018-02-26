@@ -220,7 +220,8 @@ if __name__ == "__main__":
     elif loglog:
         plt.loglog()
         
-    plt.grid(b=grid_on, color='#666666', which='both')
+    if grid_on:
+        plt.grid(b=grid_on, color='#666666', which='both')
         
     if equal_axis:
         plt.axis('equal')
