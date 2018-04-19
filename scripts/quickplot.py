@@ -5,6 +5,8 @@ import matplotlib.pyplot as plt
 import argparse
 import string
 
+from scipy.ndimage import median_filter, gaussian_filter1d
+
 import numpy as np
 
 if __name__ == "__main__":
@@ -15,6 +17,7 @@ if __name__ == "__main__":
     loggroup = parser.add_mutually_exclusive_group()
     errgroup = parser.add_mutually_exclusive_group()
     linegroup = parser.add_mutually_exclusive_group()
+    processgroup = parser.add_mutually_exclusive_group()
     
     parser.add_argument('file', type=str, help='data filename')
     parser.add_argument('--usecols', metavar='N', type=int, nargs='+', 
@@ -37,13 +40,21 @@ if __name__ == "__main__":
 #                           help="don't plot lines, only markers")
 
     errgroup.add_argument('--droperr', action='store_true',
-                        help='drop error columns during import')
+                          help='drop error columns during import')
     errgroup.add_argument('--err', action='store_true', 
-                        help='read and plot errorbars')
+                          help='read and plot errorbars')
 
     loggroup.add_argument('--logx', action='store_true', help='log x-axis')
     loggroup.add_argument('--logy', action='store_true', help='log y-axis')
     loggroup.add_argument('--loglog', action='store_true', help='log-log plot')
+    
+    processgroup.add_argument('--median', metavar='r', type=int, 
+                              help='filter data with median filter of radius r')
+    processgroup.add_argument('--gaussian', metavar='s', type=int, 
+                              help='filter data with gaussian filter of radius s')
+    processgroup.add_argument('--fft', action='store_true',
+                              help='plot signal power spectrum')
+    
         
     
     args = parser.parse_args()
@@ -53,6 +64,7 @@ if __name__ == "__main__":
     sort_data = args.sort
     grid_on = args.grid
     equal_axis = args.axeq
+
     
     polyfit = args.polyfit
     
@@ -65,8 +77,12 @@ if __name__ == "__main__":
     logy = args.logy
     loglog = args.loglog
     
-    plt.ioff()
+    median = args.median
+    gaussian = args.gaussian
+    do_fft = args.fft
     
+    plt.ioff()
+
     
     ###################
     # loading block
@@ -112,6 +128,13 @@ if __name__ == "__main__":
         err = data.iloc[:,1::2].values
         dat = data.iloc[:,0::2].values
         la = data.iloc[:,0::2].columns.values
+        
+        if median is not None:
+            dat = median_filter(dat, median)
+        if gaussian is not None:
+            dat = gaussian_filter1d(dat, gaussian)
+        if do_fft:
+            print("FFT not currently supported with errorbars. Ignoring command")
                 
         
         for d,e,l in zip(dat.T, err.T, la):
@@ -168,9 +191,19 @@ if __name__ == "__main__":
         x = data.index.values
         dat = data.values
         la = data.columns.values
-                
+            
+        if do_fft:
+            x = np.fft.rfftfreq(x.shape[0], x[1]-x[0])
         
         for d,l in zip(dat.T, la):
+            
+            if median is not None:
+                d = median_filter(d, median, axis=0)
+            if gaussian is not None:
+                d = gaussian_filter1d(d, gaussian, axis=0)            
+            if do_fft:
+                d = np.abs(np.fft.rfft(d))**2
+
             li, = plt.plot(x, d, fmt, label=l)
             
             if polyfit is not None:
@@ -195,7 +228,7 @@ if __name__ == "__main__":
 #                p,v = np.polyfit(x_,d_,polyfit,w=w_, cov=True)
 #                p_std = np.sqrt(np.diag(v))
 #                print("{:s} polyfit: {} +/- {}".format(l, p, p_std))\
-                p = np.polyfit(x_,d_,polyfit,w=w_, cov=False)
+                p = np.polyfit(x_,d_,polyfit, cov=False)
                 print("{:s} polyfit: {}".format(l, p))
 
                 xx = np.linspace(x_.min(), x_.max(), 1000)
@@ -210,7 +243,7 @@ if __name__ == "__main__":
                 plt.plot(xx,yy,'--',c=li.get_c())
             
             
-        plt.xlabel(data.index.name)
+        plt.xlabel(data.index.name + " Frequency" * do_fft)
         plt.legend()
         
     if logx:
